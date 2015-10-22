@@ -610,7 +610,17 @@ static void linphone_iphone_display_status(struct _LinphoneCore *lc, const char 
 }
 
 - (void)onCall:(LinphoneCall *)call StateChanged:(LinphoneCallState)state withMessage:(const char *)message {
-
+   
+//   const LinphoneAddress* friend_address = linphone_friend_get_address(friend);
+    NSString *sourceString = [[NSThread callStackSymbols] objectAtIndex:1];
+   
+    NSCharacterSet *separatorSet = [NSCharacterSet characterSetWithCharactersInString:@" -[]+?.,"];
+    NSMutableArray *array = [NSMutableArray arrayWithArray:[sourceString  componentsSeparatedByCharactersInSet:separatorSet]];
+    [array removeObject:@""];
+    NSLog(@"Framework = %@", [array objectAtIndex:1]);
+    NSLog(@"Class caller = %@", [array objectAtIndex:3]);
+    NSLog(@"Function caller = %@", [array objectAtIndex:4]);
+    
 	// Handling wrapper
 	LinphoneCallAppData *data = (__bridge LinphoneCallAppData *)linphone_call_get_user_data(call);
 	if (!data) {
@@ -622,6 +632,8 @@ static void linphone_iphone_display_status(struct _LinphoneCore *lc, const char 
 
 		// we were woken up by a silent push. Call the completion handler with NEWDATA
 		// so that the push is notified to the user
+        NSLog(@"woken up by a silent push %p", silentPushCompletion);
+        
 		LOGI(@"onCall - handler %p", silentPushCompletion);
 		silentPushCompletion(UIBackgroundFetchResultNewData);
 		silentPushCompletion = nil;
@@ -705,7 +717,7 @@ static void linphone_iphone_display_status(struct _LinphoneCore *lc, const char 
 					data->notification.applicationIconBadgeNumber = 1;
 
 					[[UIApplication sharedApplication] presentLocalNotificationNow:data->notification];
-
+                    NSLog(@"prezentam notificarea locala!");
 					if (!incallBgTask) {
 						incallBgTask = [[UIApplication sharedApplication] beginBackgroundTaskWithExpirationHandler:^{
 						  LOGW(@"Call cannot ring any more, too late");
@@ -793,12 +805,24 @@ static void linphone_iphone_display_status(struct _LinphoneCore *lc, const char 
 		@"state" : [NSNumber numberWithInt:state],
 		@"message" : [NSString stringWithUTF8String:message]
 	};
+    NSLog(@"Dictionar postat pentru call Update %@",dict);
 	[[NSNotificationCenter defaultCenter] postNotificationName:kLinphoneCallUpdate object:self userInfo:dict];
 }
 
 static void linphone_iphone_call_state(LinphoneCore *lc, LinphoneCall *call, LinphoneCallState state,
 									   const char *message) {
+    NSLog(@"linphone incoming call %s ",__PRETTY_FUNCTION__);
+    
+    NSString *sourceString = [[NSThread callStackSymbols] objectAtIndex:1];
+    NSCharacterSet *separatorSet = [NSCharacterSet characterSetWithCharactersInString:@" -[]+?.,"];
+    NSMutableArray *array = [NSMutableArray arrayWithArray:[sourceString  componentsSeparatedByCharactersInSet:separatorSet]];
+    [array removeObject:@""];
+    NSLog(@"Framework = %@", [array objectAtIndex:1]);
+    NSLog(@"Memory address = %@", [array objectAtIndex:2]);
+    NSLog(@"Class caller = %@", [array objectAtIndex:3]);
+    NSLog(@"Function caller = %@", [array objectAtIndex:4]);
 	[(__bridge LinphoneManager *)linphone_core_get_user_data(lc) onCall:call StateChanged:state withMessage:message];
+    
 }
 
 #pragma mark - Transfert State Functions
@@ -826,6 +850,9 @@ static void linphone_iphone_global_state_changed(LinphoneCore *lc, LinphoneGloba
 }
 
 - (void)globalStateChangedNotificationHandler:(NSNotification *)notif {
+    
+    NSLog(@"notificare primita %s",__PRETTY_FUNCTION__);
+    
 	if ((LinphoneGlobalState)[[[notif userInfo] valueForKey:@"state"] integerValue] == LinphoneGlobalOn) {
 		[self finishCoreConfiguration];
 	}
@@ -855,6 +882,8 @@ static void linphone_iphone_configuring_status_changed(LinphoneCore *lc, Linphon
 }
 
 - (void)configuringStateChangedNotificationHandler:(NSNotification *)notif {
+    NSLog(@"notificare primita %s",__PRETTY_FUNCTION__);
+    
 	if ((LinphoneConfiguringState)[[[notif userInfo] valueForKey:@"state"] integerValue] ==
 		LinphoneConfiguringSuccessful) {
 		wasRemoteProvisioned = TRUE;
@@ -887,6 +916,8 @@ static void linphone_iphone_registration_state(LinphoneCore *lc, LinphoneProxyCo
 
 - (void)onMessageReceived:(LinphoneCore *)lc room:(LinphoneChatRoom *)room message:(LinphoneChatMessage *)msg {
 
+   
+    
 	if (silentPushCompletion) {
 
 		// we were woken up by a silent push. Call the completion handler with NEWDATA
@@ -897,6 +928,8 @@ static void linphone_iphone_registration_state(LinphoneCore *lc, LinphoneProxyCo
 	}
 	const LinphoneAddress *remoteAddress = linphone_chat_message_get_from_address(msg);
 	char *c_address = linphone_address_as_string_uri_only(remoteAddress);
+    
+    //the user that sent the message
 	NSString *address = [NSString stringWithUTF8String:c_address];
 	NSString *remote_uri = [NSString stringWithUTF8String:c_address];
 	const char *call_id = linphone_chat_message_get_custom_header(msg, "Call-ID");
@@ -949,6 +982,8 @@ static void linphone_iphone_registration_state(LinphoneCore *lc, LinphoneProxyCo
 }
 
 static void linphone_iphone_message_received(LinphoneCore *lc, LinphoneChatRoom *room, LinphoneChatMessage *message) {
+    
+    
 	[(__bridge LinphoneManager *)linphone_core_get_user_data(lc) onMessageReceived:lc room:room message:message];
 }
 
@@ -1270,10 +1305,12 @@ static LinphoneCoreVTable linphonec_vtable = {.show = NULL,
 
 // scheduling loop
 - (void)iterate {
+   // NSLog(@"iteration!!!!");
 	linphone_core_iterate(theLinphoneCore);
 }
 
 - (void)audioSessionInterrupted:(NSNotification *)notification {
+    NSLog(@"notificare primita %s",__PRETTY_FUNCTION__);
 	int interruptionType = [notification.userInfo[AVAudioSessionInterruptionTypeKey] intValue];
 	if (interruptionType == AVAudioSessionInterruptionTypeBegan) {
 		[self beginInterruption];
@@ -1422,7 +1459,7 @@ static BOOL libStarted = FALSE;
 		return;
 	}
 	linphone_core_set_log_collection_path([[LinphoneManager cacheDirectory] UTF8String]);
-	[self setLogsEnabled:[self lpConfigBoolForKey:@"debugenable_preference"]];
+	//[self setLogsEnabled:[self lpConfigBoolForKey:@"debugenable_preference"]];
 	LOGI(@"Create linphonecore");
 	connectivity = none;
 
@@ -1872,6 +1909,20 @@ static void audioRouteChangeListenerCallback(void *inUserData,					  // 1
 
 - (void)call:(NSString *)address displayName:(NSString *)displayName transfer:(BOOL)transfer {
 	// First verify that network is available, abort otherwise.
+    NSString *sourceString = [[NSThread callStackSymbols] objectAtIndex:1];
+    // Example: 1   UIKit                               0x00540c89 -[UIApplication _callInitializationDelegatesForURL:payload:suspended:] + 1163
+    NSCharacterSet *separatorSet = [NSCharacterSet characterSetWithCharactersInString:@" -[]+?.,"];
+    NSMutableArray *array = [NSMutableArray arrayWithArray:[sourceString  componentsSeparatedByCharactersInSet:separatorSet]];
+    [array removeObject:@""];
+    
+     
+    NSLog(@"Framework = %@", [array objectAtIndex:1]);
+    NSLog(@"Memory address = %@", [array objectAtIndex:2]);
+    NSLog(@"Class caller = %@", [array objectAtIndex:3]);
+    NSLog(@"Function caller = %@", [array objectAtIndex:4]);
+    
+    NSLog(@"adress %@ displayName %@ transfer %d",address,displayName,transfer);
+    
 	if (!linphone_core_is_network_reachable(theLinphoneCore)) {
 		UIAlertView *error = [[UIAlertView alloc]
 				initWithTitle:NSLocalizedString(@"Network Error", nil)
@@ -2311,6 +2362,7 @@ static void audioRouteChangeListenerCallback(void *inUserData,					  // 1
 #pragma mark - InApp Purchase events
 
 - (void)inappReady:(NSNotification *)notif {
+    NSLog(@"notificare primita %s",__PRETTY_FUNCTION__);
 	// Query our in-app server to retrieve InApp purchases
 	[_iapManager retrievePurchases];
 }

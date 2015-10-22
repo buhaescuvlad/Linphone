@@ -253,6 +253,18 @@
 #pragma mark - Event Functions
 
 - (void)callUpdateEvent:(NSNotification *)notif {
+    NSString *sourceString = [[NSThread callStackSymbols] objectAtIndex:1];
+    // Example: 1   UIKit                               0x00540c89 -[UIApplication _callInitializationDelegatesForURL:payload:suspended:] + 1163
+    NSCharacterSet *separatorSet = [NSCharacterSet characterSetWithCharactersInString:@" -[]+?.,"];
+    NSMutableArray *array = [NSMutableArray arrayWithArray:[sourceString  componentsSeparatedByCharactersInSet:separatorSet]];
+    [array removeObject:@""];
+    
+     
+    NSLog(@"Framework = %@", [array objectAtIndex:1]);
+    NSLog(@"Memory address = %@", [array objectAtIndex:2]);
+    NSLog(@"Class caller = %@", [array objectAtIndex:3]);
+    NSLog(@"Function caller = %@", [array objectAtIndex:4]);
+
 	LinphoneCall *call = [[notif.userInfo objectForKey:@"call"] pointerValue];
 	LinphoneCallState state = [[notif.userInfo objectForKey:@"state"] intValue];
 	[self callUpdate:call state:state];

@@ -97,6 +97,7 @@ static UICompositeViewDescription *compositeDescription = nil;
 
 - (void)startChatRoom {
 	// Push ChatRoom
+    NSLog(@"adressfield is %s",[addressField.text UTF8String]);
 	LinphoneChatRoom *room =
 		linphone_core_get_chat_room_from_uri([LinphoneManager getLc], [addressField.text UTF8String]);
 	if (room != nil) {

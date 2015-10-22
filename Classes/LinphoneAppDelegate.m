@@ -74,7 +74,18 @@
 
 - (void)applicationDidBecomeActive:(UIApplication *)application {
 	LOGI(@"%@", NSStringFromSelector(_cmd));
-
+    
+    NSString *sourceString = [[NSThread callStackSymbols] objectAtIndex:1];
+    // Example: 1   UIKit                               0x00540c89 -[UIApplication _callInitializationDelegatesForURL:payload:suspended:] + 1163
+    NSCharacterSet *separatorSet = [NSCharacterSet characterSetWithCharactersInString:@" -[]+?.,"];
+    NSMutableArray *array = [NSMutableArray arrayWithArray:[sourceString  componentsSeparatedByCharactersInSet:separatorSet]];
+    [array removeObject:@""];
+    
+     
+    NSLog(@"Framework = %@", [array objectAtIndex:1]);
+    NSLog(@"Memory address = %@", [array objectAtIndex:2]);
+    NSLog(@"Class caller = %@", [array objectAtIndex:3]);
+    NSLog(@"Function caller = %@", [array objectAtIndex:4]);
 	if (startedInBackground) {
 		startedInBackground = FALSE;
 		[[PhoneMainView instance] startUp];
@@ -162,7 +173,7 @@
 	LinphoneManager *instance = [LinphoneManager instance];
 	BOOL background_mode = [instance lpConfigBoolForKey:@"backgroundmode_preference"];
 	BOOL start_at_boot = [instance lpConfigBoolForKey:@"start_at_boot_preference"];
-
+    NSLog(@"valorile sunt %d %d",background_mode,start_at_boot);
 	if ([app respondsToSelector:@selector(registerUserNotificationSettings:)]) {
 		/* iOS8 notifications can be actioned! Awesome: */
 		UIUserNotificationType notifTypes =
@@ -210,6 +221,15 @@
 	if (remoteNotif) {
 		LOGI(@"PushNotification from launch received.");
 		[self processRemoteNotification:remoteNotif];
+        NSLog(@"notificare primita  %s",__PRETTY_FUNCTION__);
+      
+        NSString *sourceString = [[NSThread callStackSymbols] objectAtIndex:1];
+       
+        NSCharacterSet *separatorSet = [NSCharacterSet characterSetWithCharactersInString:@" -[]+?.,"];
+        NSMutableArray *array = [NSMutableArray arrayWithArray:[sourceString  componentsSeparatedByCharactersInSet:separatorSet]];
+        [array removeObject:@""];
+    
+        NSLog(@"Class caller = %@", [array objectAtIndex:3]);
 	}
 	if (bgStartId != UIBackgroundTaskInvalid)
 		[[UIApplication sharedApplication] endBackgroundTask:bgStartId];
@@ -273,7 +293,30 @@
 }
 
 - (void)processRemoteNotification:(NSDictionary *)userInfo {
-
+    
+//    
+//    NSString *sourceString = [[NSThread callStackSymbols] objectAtIndex:1];
+//    // Example: 1   UIKit                               0x00540c89 -[UIApplication _callInitializationDelegatesForURL:payload:suspended:] + 1163
+//    NSCharacterSet *separatorSet = [NSCharacterSet characterSetWithCharactersInString:@" -[]+?.,"];
+//    NSMutableArray *array = [NSMutableArray arrayWithArray:[sourceString  componentsSeparatedByCharactersInSet:separatorSet]];
+//    [array removeObject:@""];
+//    
+//     
+//    NSLog(@"Framework = %@", [array objectAtIndex:1]);
+//    NSLog(@"Memory address = %@", [array objectAtIndex:2]);
+//    NSLog(@"Class caller = %@", [array objectAtIndex:3]);
+//    NSLog(@"Function caller = %@", [array objectAtIndex:4]);
+    
+    NSLog(@"notificare primita %s",__PRETTY_FUNCTION__);
+    
+    NSString *sourceString = [[NSThread callStackSymbols] objectAtIndex:1];
+    
+    NSCharacterSet *separatorSet = [NSCharacterSet characterSetWithCharactersInString:@" -[]+?.,"];
+    NSMutableArray *array = [NSMutableArray arrayWithArray:[sourceString  componentsSeparatedByCharactersInSet:separatorSet]];
+    [array removeObject:@""];
+    
+    NSLog(@"Class caller = %@", [array objectAtIndex:3]);
+    
 	NSDictionary *aps = [userInfo objectForKey:@"aps"];
 
 	if (aps != nil) {
@@ -405,6 +448,14 @@
 
 - (void)application:(UIApplication *)application
 	didRegisterForRemoteNotificationsWithDeviceToken:(NSData *)deviceToken {
+    NSLog(@"notificare primita %s",__PRETTY_FUNCTION__);
+    NSString *sourceString = [[NSThread callStackSymbols] objectAtIndex:1];
+    
+    NSCharacterSet *separatorSet = [NSCharacterSet characterSetWithCharactersInString:@" -[]+?.,"];
+    NSMutableArray *array = [NSMutableArray arrayWithArray:[sourceString  componentsSeparatedByCharactersInSet:separatorSet]];
+    [array removeObject:@""];
+    
+    NSLog(@"Class caller = %@", [array objectAtIndex:3]);
 	LOGI(@"%@ : %@", NSStringFromSelector(_cmd), deviceToken);
 	[[LinphoneManager instance] setPushNotificationToken:deviceToken];
 }
@@ -425,6 +476,8 @@
 	handleActionWithIdentifier:(NSString *)identifier
 		  forLocalNotification:(UILocalNotification *)notification
 			 completionHandler:(void (^)())completionHandler {
+    NSLog(@"notificare primita %s",__PRETTY_FUNCTION__);
+    
 	LOGI(@"%@", NSStringFromSelector(_cmd));
 	if ([[UIDevice currentDevice].systemVersion floatValue] >= 8) {
 

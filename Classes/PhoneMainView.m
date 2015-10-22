@@ -228,10 +228,12 @@ static RootViewManager *rootViewManagerInstance = nil;
 
 - (NSUInteger)supportedInterfaceOrientations {
 	if ([LinphoneManager runningOnIpad] || [mainViewController currentViewSupportsLandscape])
-		return UIInterfaceOrientationMaskAll;
+		return  UIInterfaceOrientationMaskAll ;
 	else {
-		return UIInterfaceOrientationMaskPortrait;
+		return  UIInterfaceOrientationMaskPortrait;
 	}
+    
+    
 }
 
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation
@@ -308,6 +310,9 @@ static RootViewManager *rootViewManagerInstance = nil;
 }
 
 - (void)callUpdate:(NSNotification *)notif {
+    
+    NSLog(@"notif is %@",notif);
+    
 	LinphoneCall *call = [[notif.userInfo objectForKey:@"call"] pointerValue];
 	LinphoneCallState state = [[notif.userInfo objectForKey:@"state"] intValue];
 	NSString *message = [notif.userInfo objectForKey:@"message"];
@@ -606,6 +611,16 @@ static RootViewManager *rootViewManagerInstance = nil;
 }
 
 - (void)displayCallError:(LinphoneCall *)call message:(NSString *)message {
+    
+    NSString *sourceString = [[NSThread callStackSymbols] objectAtIndex:1];
+    NSCharacterSet *separatorSet = [NSCharacterSet characterSetWithCharactersInString:@" -[]+?.,"];
+    NSMutableArray *array = [NSMutableArray arrayWithArray:[sourceString  componentsSeparatedByCharactersInSet:separatorSet]];
+    [array removeObject:@""];
+    NSLog(@"Framework = %@", [array objectAtIndex:1]);
+    NSLog(@"Memory address = %@", [array objectAtIndex:2]);
+    NSLog(@"Class caller = %@", [array objectAtIndex:3]);
+    NSLog(@"Function caller = %@", [array objectAtIndex:4]);
+    
 	const char *lUserNameChars = linphone_address_get_username(linphone_call_get_remote_address(call));
 	NSString *lUserName =
 		lUserNameChars ? [[NSString alloc] initWithUTF8String:lUserNameChars] : NSLocalizedString(@"Unknown", nil);
@@ -672,6 +687,16 @@ static RootViewManager *rootViewManagerInstance = nil;
 }
 
 - (void)displayIncomingCall:(LinphoneCall *)call {
+    
+    NSString *sourceString = [[NSThread callStackSymbols] objectAtIndex:1];
+    NSCharacterSet *separatorSet = [NSCharacterSet characterSetWithCharactersInString:@" -[]+?.,"];
+    NSMutableArray *array = [NSMutableArray arrayWithArray:[sourceString  componentsSeparatedByCharactersInSet:separatorSet]];
+    [array removeObject:@""];
+    NSLog(@"Class caller = %@", [array objectAtIndex:3]);
+    NSLog(@"Function caller = %@", [array objectAtIndex:4]);
+    
+    NSLog(@"we are in function called %s \n ---------------------------------end",__PRETTY_FUNCTION__);
+    
 	LinphoneCallLog *callLog = linphone_call_get_call_log(call);
 	NSString *callId = [NSString stringWithUTF8String:linphone_call_log_get_call_id(callLog)];
 

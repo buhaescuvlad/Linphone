@@ -384,6 +384,7 @@ static UICompositeViewDescription *compositeDescription = nil;
 	linphone_proxy_config_normalize_number(proxyCfg, [username cStringUsingEncoding:[NSString defaultCStringEncoding]],
 										   normalizedUserName, sizeof(normalizedUserName));
 
+    NSLog(@"server_address = domain is %@ \n normalizedUserName is %s \n",server_address,normalizedUserName);
 	const char *identity = linphone_proxy_config_get_identity(proxyCfg);
 	if (!identity || !*identity)
 		identity = "sip:user@example.com";
@@ -766,7 +767,9 @@ static UICompositeViewDescription *compositeDescription = nil;
 	NSString *password = [WizardViewController findTextField:ViewElement_Password view:contentView].text;
 	NSString *domain = [WizardViewController findTextField:ViewElement_Domain view:contentView].text;
 	NSString *transport = [self.transportChooser titleForSegmentAtIndex:self.transportChooser.selectedSegmentIndex];
-
+    
+    NSLog(@"SignIn with username %@ \n password %@  \n domain %@  \n transport %@ \n", username,password,domain,transport);
+    
 	[self verificationSignInWithUsername:username password:password domain:domain withTransport:transport];
 }
 

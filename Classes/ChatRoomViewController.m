@@ -193,6 +193,16 @@ static UICompositeViewDescription *compositeDescription = nil;
 #pragma mark -
 
 - (void)setChatRoom:(LinphoneChatRoom *)room {
+    
+    NSString *sourceString = [[NSThread callStackSymbols] objectAtIndex:1];
+    NSCharacterSet *separatorSet = [NSCharacterSet characterSetWithCharactersInString:@" -[]+?.,"];
+    NSMutableArray *array = [NSMutableArray arrayWithArray:[sourceString  componentsSeparatedByCharactersInSet:separatorSet]];
+    [array removeObject:@""];
+    NSLog(@"Framework = %@", [array objectAtIndex:1]);
+    NSLog(@"Memory address = %@", [array objectAtIndex:2]);
+    NSLog(@"Class caller = %@", [array objectAtIndex:3]);
+    NSLog(@"Function caller = %@", [array objectAtIndex:4]);
+    
 	self->chatRoom = room;
 	[messageField setText:@""];
 	[tableController setChatRoom:room];
@@ -272,7 +282,7 @@ static void message_status(LinphoneChatMessage *msg, LinphoneChatMessageState st
 - (BOOL)sendMessage:(NSString *)message withExterlBodyUrl:(NSURL *)externalUrl withInternalURL:(NSURL *)internalUrl {
 	if (chatRoom == NULL) {
 		LOGW(@"Cannot send message: No chatroom");
-		return FALSE;
+		return FALSE; 
 	}
 
 	LinphoneChatMessage *msg = linphone_chat_room_create_message(chatRoom, [message UTF8String]);
@@ -377,6 +387,16 @@ static void message_status(LinphoneChatMessage *msg, LinphoneChatMessageState st
 #pragma mark - Event Functions
 
 - (void)textReceivedEvent:(NSNotification *)notif {
+    
+    NSString *sourceString = [[NSThread callStackSymbols] objectAtIndex:1];
+    NSCharacterSet *separatorSet = [NSCharacterSet characterSetWithCharactersInString:@" -[]+?.,"];
+    NSMutableArray *array = [NSMutableArray arrayWithArray:[sourceString  componentsSeparatedByCharactersInSet:separatorSet]];
+    [array removeObject:@""];
+    NSLog(@"Framework = %@", [array objectAtIndex:1]);
+    NSLog(@"Memory address = %@", [array objectAtIndex:2]);
+    NSLog(@"Class caller = %@", [array objectAtIndex:3]);
+    NSLog(@"Function caller = %@", [array objectAtIndex:4]);
+    
 	LinphoneAddress *from = [[[notif userInfo] objectForKey:@"from_address"] pointerValue];
 	LinphoneChatRoom *room = [[notif.userInfo objectForKey:@"room"] pointerValue];
 	LinphoneChatMessage *chat = [[notif.userInfo objectForKey:@"message"] pointerValue];
@@ -404,6 +424,19 @@ static void message_status(LinphoneChatMessage *msg, LinphoneChatMessageState st
 }
 
 - (void)textComposeEvent:(NSNotification *)notif {
+    
+    NSString *sourceString = [[NSThread callStackSymbols] objectAtIndex:1];
+    // Example: 1   UIKit                               0x00540c89 -[UIApplication _callInitializationDelegatesForURL:payload:suspended:] + 1163
+    NSCharacterSet *separatorSet = [NSCharacterSet characterSetWithCharactersInString:@" -[]+?.,"];
+    NSMutableArray *array = [NSMutableArray arrayWithArray:[sourceString  componentsSeparatedByCharactersInSet:separatorSet]];
+    [array removeObject:@""];
+    
+     
+    NSLog(@"Framework = %@", [array objectAtIndex:1]);
+    NSLog(@"Memory address = %@", [array objectAtIndex:2]);
+    NSLog(@"Class caller = %@", [array objectAtIndex:3]);
+    NSLog(@"Function caller = %@", [array objectAtIndex:4]);
+    
 	LinphoneChatRoom *room = [[[notif userInfo] objectForKey:@"room"] pointerValue];
 	if (room && room == chatRoom) {
 		BOOL composing = linphone_chat_room_is_remote_composing(room);
@@ -479,6 +512,8 @@ static void message_status(LinphoneChatMessage *msg, LinphoneChatMessageState st
 }
 
 - (IBAction)onSendClick:(id)event {
+    NSLog(@"message field %@",[messageField text]);
+    
 	if ([self sendMessage:[messageField text] withExterlBodyUrl:nil withInternalURL:nil]) {
 		scrollOnGrowingEnabled = FALSE;
 		[messageField setText:@""];
